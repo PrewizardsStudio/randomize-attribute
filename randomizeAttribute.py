@@ -193,8 +193,7 @@ class randomizeAttribute(QtWidgets.QMainWindow):
             else:
                 cmds.setAttr(node + '.'  + attribute, randomResult)
      
-def main():
-    myRandomizeAttribute = randomizeAttribute()
+myRandomizeAttribute = randomizeAttribute()
 """
 
 def onMayaDroppedPythonFile(args):
