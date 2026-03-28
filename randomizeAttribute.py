@@ -1,4 +1,5 @@
 moduleName = 'randomizeAttribute'
+moduleVersion = 1.1
 moduleNameLong = 'Randomize Selected Attributes'
 moduleUrl = 'https://github.com/PrewizardsStudio/randomize-attribute'
 moduleIconUrl = 'https://github.com/PrewizardsStudio/randomize-attribute/blob/main/randomizeAttribute.png?raw=true'
@@ -151,7 +152,7 @@ class randomizeAttribute(QtWidgets.QMainWindow):
         else:
             self.statusBar().showMessage('')
             if self.rangeChkBox.isChecked():
-                range = [float(self.rangeMinLine.text()), float(self.rangeMaxLine.text())]
+                range = [float(self.rangeMinLine.text().replace(',', '.')), float(self.rangeMaxLine.text().replace(',', '.'))]
             else:
                 range = None
             if self.relativeChkBox.isChecked():
@@ -160,7 +161,14 @@ class randomizeAttribute(QtWidgets.QMainWindow):
                 relative = False      
             for node in selectedNodes:            
                 for attr in selectedAttr:    
-                    self.randomAttribute(node, attr, range=range, relative=relative) 
+                    if attr in ['sx', 'sy', 'sz'] and 'sx' in selectedAttr and 'sy' in selectedAttr and 'sz' in selectedAttr:
+                        if attr not in ['sy', 'sz']:                    
+                            randomResult = self.randomAttribute(node, attr, range=range, relative=relative, onlyResult=True)
+                            cmds.setAttr(node + '.sx', randomResult)
+                            cmds.setAttr(node + '.sy', randomResult)
+                            cmds.setAttr(node + '.sz', randomResult)
+                    else:
+                        self.randomAttribute(node, attr, range=range, relative=relative)   
     
     def getAttributeRange(self, node, attribute):
         try:
@@ -168,7 +176,7 @@ class randomizeAttribute(QtWidgets.QMainWindow):
         except:
             return None
     
-    def randomAttribute(self, node, attribute, range=None, relative=False):
+    def randomAttribute(self, node, attribute, range=None, relative=False, onlyResult=False):
         import math
         
         if cmds.attributeQuery(attribute, node=node, exists=True):
@@ -189,8 +197,12 @@ class randomizeAttribute(QtWidgets.QMainWindow):
             elif attributeType in ['typed']:
                 cmds.error("Can't randomize " + attribute +  ' because it is ' +  attributeType + ' type')
             if relative:
+                if onlyResult:
+                    return cmds.getAttr(node + '.'  + attribute) + randomResult
                 cmds.setAttr(node + '.'  + attribute, cmds.getAttr(node + '.'  + attribute) + randomResult)
             else:
+                if onlyResult:
+                    return randomResult
                 cmds.setAttr(node + '.'  + attribute, randomResult)
      
 myRandomizeAttribute = randomizeAttribute()
